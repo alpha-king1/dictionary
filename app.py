@@ -8,6 +8,66 @@ import threading
 import queue
 import time
 
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+# Page configuration - MUST be first Streamlit command
+st.set_page_config(
+    page_title="Smart Thesaurus",
+    page_icon="📘",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+
+# Download required NLTK data with better error handling
+@st.cache_resource
+def download_nltk_data():
+    """Download NLTK data with proper error handling for deployment"""
+    try:
+        # Check if wordnet is already available
+        nltk.data.find('corpora/wordnet')
+        print("WordNet already available")
+    except LookupError:
+        try:
+            print("Downloading WordNet...")
+            nltk.download('wordnet', quiet=True)
+            print("WordNet downloaded successfully")
+        except Exception as e:
+            print(f"Failed to download WordNet: {e}")
+            st.error("Failed to download WordNet data. Some features may not work.")
+
+    try:
+        # Check if omw-1.4 is already available
+        nltk.data.find('corpora/omw-1.4')
+        print("OMW-1.4 already available")
+    except LookupError:
+        try:
+            print("Downloading OMW-1.4...")
+            nltk.download('omw-1.4', quiet=True)
+            print("OMW-1.4 downloaded successfully")
+        except Exception as e:
+            print(f"Failed to download OMW-1.4: {e}")
+            st.warning("Failed to download multilingual wordnet data.")
+
+
+# Initialize NLTK data
+download_nltk_data()
+
+# Now try to import wordnet
+try:
+    from nltk.corpus import wordnet as wn
+
+    NLTK_AVAILABLE = True
+except ImportError as e:
+    st.error(f"Failed to import NLTK wordnet: {e}")
+    NLTK_AVAILABLE = False
+    wn = None
+
 # Page configuration - MUST be first Streamlit command
 st.set_page_config(
     page_title="Smart Thesaurus",
