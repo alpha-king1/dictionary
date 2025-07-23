@@ -1,0 +1,67 @@
+{
+  "total_words": 3000,
+  "parts_of_speech": {
+    "noun": 1970,
+    "adjective": 446,
+    "verb": 422,
+    "adverb": 162
+  },
+  "avg_synonyms": 3.5376666666666665,
+  "avg_antonyms": 0.31233333333333335,
+  "sample_words": [
+    {
+      "word": "aaron",
+      "definition": "United States professional baseball player who hit more home runs than Babe Ruth (born in 1934)",
+      "part_of_speech": "noun",
+      "synonyms": [
+        "Aaron"
+      ],
+      "antonyms": [],
+      "examples": []
+    },
+    {
+      "word": "abbot",
+      "definition": "the superior of an abbey of monks",
+      "part_of_speech": "noun",
+      "synonyms": [
+        "archimandrite"
+      ],
+      "antonyms": [],
+      "examples": []
+    },
+    {
+      "word": "aberrant",
+      "definition": "one whose behavior departs substantially from the norm of a group",
+      "part_of_speech": "noun",
+      "synonyms": [
+        "deviate",
+        "deviant"
+      ],
+      "antonyms": [],
+      "examples": [
+        "aberrant behavior"
+      ]
+    },
+    {
+      "word": "abeyance",
+      "definition": "temporary cessation or suspension",
+      "part_of_speech": "noun",
+      "synonyms": [
+        "suspension"
+      ],
+      "antonyms": [],
+      "examples": []
+    },
+    {
+      "word": "ablation",
+      "definition": "surgical removal of a body part or tissue",
+      "part_of_speech": "noun",
+      "synonyms": [
+        "excision",
+        "extirpation"
+      ],
+      "antonyms": [],
+      "examples": []
+    }
+  ]
+}
