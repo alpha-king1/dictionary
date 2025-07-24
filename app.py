@@ -7,6 +7,7 @@ import speech_recognition as sr
 import threading
 import queue
 import time
+import ssl
 
 try:
     _create_unverified_https_context = ssl._create_unverified_context
