@@ -69,13 +69,7 @@ except ImportError as e:
     NLTK_AVAILABLE = False
     wn = None
 
-# Page configuration - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Smart Thesaurus",
-    page_icon="📘",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# Page configuration - MUST be first Streamlet command
 
 # Download required NLTK data
 try:
@@ -433,6 +427,38 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
     }
 
+    /* Suggestion styling */
+    .suggestion-message {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 2px solid #f59e0b;
+        color: #92400e;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+        margin-top: 1rem;
+    }
+
+    .suggestion-button {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .suggestion-button:hover {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4);
+    }
+
     /* Speech button styling */
     .speech-button {
         background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
@@ -581,8 +607,21 @@ def load_word_database():
         return []
 
 
-def get_closest_word(input_word, word_database, threshold=70):
-    """Find the closest matching word from the word database."""
+def find_exact_word(input_word, word_database):
+    """Find exact matching word from the word database."""
+    if not input_word or not word_database:
+        return None
+
+    input_word_clean = input_word.lower().strip()
+
+    for word_data in word_database:
+        if word_data['word'].lower() == input_word_clean:
+            return word_data
+    return None
+
+
+def get_closest_word_suggestion(input_word, word_database, threshold=70):
+    """Find the closest matching word for suggestion purposes only."""
     if not input_word or not word_database:
         return None
 
@@ -593,8 +632,8 @@ def get_closest_word(input_word, word_database, threshold=70):
         # Return the full word data
         for word_data in word_database:
             if word_data['word'] == match:
-                return word_data
-    return None
+                return word_data, score
+    return None, 0
 
 
 def search_words_starting_with(prefix, word_database):
@@ -866,19 +905,39 @@ with col2:
 current_word = user_input or st.session_state.selected_word
 
 if current_word:
-    word_data = get_closest_word(current_word, word_database)
+    # First, try to find exact match
+    exact_word_data = find_exact_word(current_word, word_database)
 
-    if word_data:
-        display_word_info(word_data)
+    if exact_word_data:
+        # Word found in thesaurus - display it
+        display_word_info(exact_word_data)
     else:
+        # Word not found - show error and suggest closest match
         col1, col2, col3 = st.columns([1, 3, 1])
         with col2:
             st.markdown(f"""
             <div class="error-message">
-                ❌ No similar word found for "<strong>{current_word}</strong>" in our dictionary.
-                <br><small>Try checking your spelling or using a different word.</small>
+                ❌ "<strong>{current_word}</strong>" is not in our thesaurus.
+                <br><small>This word may not be in our database of {len(word_database)} words.</small>
             </div>
             """, unsafe_allow_html=True)
+
+            # Get suggestion for closest word
+            suggested_word_data, similarity_score = get_closest_word_suggestion(current_word, word_database)
+
+            if suggested_word_data and similarity_score >= 70:
+                st.markdown(f"""
+                <div class="suggestion-message">
+                    💡 Did you mean "<strong>{suggested_word_data['word']}</strong>"?
+                    <br><small>Similarity: {similarity_score}%</small>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Add button to accept the suggestion
+                if st.button(f"Show '{suggested_word_data['word']}' instead", key="suggestion_btn"):
+                    st.session_state.selected_word = suggested_word_data['word']
+                    st.session_state.user_input = suggested_word_data['word']
+                    st.rerun()
 
 # Footer with instructions
 if not current_word:
@@ -897,7 +956,7 @@ if not current_word:
     with col2:
         st.markdown("""
         **🎯 Features:**
-        - Intelligent word matching
+        - Exact word matching
         - Rich definitions and examples
         - Related words discovery
         - Voice recognition support
@@ -906,8 +965,8 @@ if not current_word:
     with col3:
         st.markdown("""
         **🔧 Tips:**
-        - Try partial spellings for fuzzy matching
-        - Use voice for hands-free search
+        - Only exact matches are shown
+        - Get suggestions for similar words
         - Browse by letter for discovery
         - Click any word to explore instantly
         """)
